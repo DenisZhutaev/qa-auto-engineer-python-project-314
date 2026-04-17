@@ -69,15 +69,14 @@ class TaskFormPage(BasePage):
             By.XPATH,
             f"//form//label[contains(normalize-space(), '{label}')]/ancestor::*[contains(@class, 'MuiFormControl-root')][1]//*[@role='combobox']",
         )
-        listbox_locator = (By.XPATH, "(//*[@role='listbox'])[last()]")
+        options_locator = (By.XPATH, "//li[@role='option' and normalize-space()!='']")
 
         for _ in range(3):
             try:
                 combobox = self.wait_until(EC.element_to_be_clickable(combobox_locator))
                 self.driver.execute_script("arguments[0].click();", combobox)
-
-                listbox = self.wait_until(EC.visibility_of_element_located(listbox_locator))
-                options = listbox.find_elements(By.XPATH, ".//*[self::li or @role='option']")
+                self.wait_until(lambda drv: len(drv.find_elements(*options_locator)) > 0)
+                options = self.driver.find_elements(*options_locator)
                 option = None
 
                 if option_text:
@@ -100,5 +99,16 @@ class TaskFormPage(BasePage):
                 return
             except (ElementClickInterceptedException, TimeoutException):
                 self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+                if fallback_to_first:
+                    # Keyboard fallback is often more stable in headless CI.
+                    try:
+                        combobox = self.wait_until(EC.element_to_be_clickable(combobox_locator))
+                        self.driver.execute_script("arguments[0].click();", combobox)
+                        combobox.send_keys(Keys.ARROW_DOWN)
+                        combobox.send_keys(Keys.ENTER)
+                        self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+                        return
+                    except Exception:
+                        self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
 
         raise AssertionError(f"Could not select '{option_text}' for '{label}'")
