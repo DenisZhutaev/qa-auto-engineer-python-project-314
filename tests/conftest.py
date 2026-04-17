@@ -14,7 +14,13 @@ from tests.support.session import open_dashboard
 
 @pytest.fixture
 def base_url():
-    return os.getenv("APP_BASE_URL", "http://localhost:5173")
+    if os.getenv("APP_BASE_URL"):
+        return os.getenv("APP_BASE_URL")
+
+    if os.path.exists("/.dockerenv"):
+        return "http://server"
+
+    return "http://localhost:5173"
 
 
 @pytest.fixture
@@ -30,7 +36,6 @@ def driver():
     chrome_options.add_argument("--disable-software-rasterizer")
     chrome_options.add_argument("--remote-debugging-port=9222")
 
-    # Chromium in Linux CI containers is usually available by this path.
     if platform.system() == "Linux" and os.path.exists("/usr/bin/chromium"):
         chrome_options.binary_location = "/usr/bin/chromium"
 
