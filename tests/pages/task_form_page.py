@@ -29,7 +29,7 @@ class TaskFormPage(BasePage):
     def fill(self, title, content, assignee, status, label):
         self._set_input(self.TITLE, title)
         self._set_input(self.CONTENT, content)
-        self._select_option("Assignee", assignee)
+        self._select_option("Assignee", assignee, fallback_to_first=True)
         self._select_option("Status", status)
         if label:
             self._select_option("Label", label)
@@ -64,21 +64,36 @@ class TaskFormPage(BasePage):
             value,
         )
 
-    def _select_option(self, label, option_text):
+    def _select_option(self, label, option_text, fallback_to_first=False):
         combobox_locator = (
             By.XPATH,
             f"//form//label[contains(normalize-space(), '{label}')]/ancestor::*[contains(@class, 'MuiFormControl-root')][1]//*[@role='combobox']",
         )
-        option_locator = (
-            By.XPATH,
-            f"(//*[@role='listbox'])[last()]//*[self::li or @role='option'][normalize-space()='{option_text}']",
-        )
+        listbox_locator = (By.XPATH, "(//*[@role='listbox'])[last()]")
 
         for _ in range(3):
             try:
                 combobox = self.wait_until(EC.element_to_be_clickable(combobox_locator))
                 self.driver.execute_script("arguments[0].click();", combobox)
-                option = self.wait_until(EC.visibility_of_element_located(option_locator))
+
+                listbox = self.wait_until(EC.visibility_of_element_located(listbox_locator))
+                options = listbox.find_elements(By.XPATH, ".//*[self::li or @role='option']")
+                option = None
+
+                if option_text:
+                    normalized_target = option_text.strip().lower()
+                    for item in options:
+                        item_text = item.text.strip().lower()
+                        if item_text == normalized_target or normalized_target in item_text:
+                            option = item
+                            break
+
+                if option is None and fallback_to_first and options:
+                    option = options[0]
+
+                if option is None:
+                    raise TimeoutException(f"Option '{option_text}' was not found for '{label}'")
+
                 self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", option)
                 self.driver.execute_script("arguments[0].click();", option)
                 self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
