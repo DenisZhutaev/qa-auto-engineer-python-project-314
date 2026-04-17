@@ -1,3 +1,4 @@
+from selenium.common.exceptions import ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -68,10 +69,21 @@ class TaskFormPage(BasePage):
             By.XPATH,
             f"//form//label[contains(normalize-space(), '{label}')]/ancestor::*[contains(@class, 'MuiFormControl-root')][1]//*[@role='combobox']",
         )
-        self.wait_until(EC.element_to_be_clickable(combobox_locator)).click()
         option_locator = (
             By.XPATH,
-            f"//li[normalize-space()='{option_text}' and @role='option'] | //*[@role='option' and normalize-space()='{option_text}']",
+            f"(//*[@role='listbox'])[last()]//*[self::li or @role='option'][normalize-space()='{option_text}']",
         )
-        self.wait_until(EC.element_to_be_clickable(option_locator)).click()
-        self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+
+        for _ in range(3):
+            try:
+                combobox = self.wait_until(EC.element_to_be_clickable(combobox_locator))
+                self.driver.execute_script("arguments[0].click();", combobox)
+                option = self.wait_until(EC.visibility_of_element_located(option_locator))
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", option)
+                self.driver.execute_script("arguments[0].click();", option)
+                self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+                return
+            except (ElementClickInterceptedException, TimeoutException):
+                self.driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+
+        raise AssertionError(f"Could not select '{option_text}' for '{label}'")
