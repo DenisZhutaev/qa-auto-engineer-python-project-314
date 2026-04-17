@@ -1,4 +1,5 @@
 import os
+import platform
 
 import pytest
 from selenium import webdriver
@@ -19,9 +20,19 @@ def base_url():
 @pytest.fixture
 def driver():
     chrome_options = Options()
-    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-setuid-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--remote-debugging-port=9222")
+
+    # Chromium in Linux CI containers is usually available by this path.
+    if platform.system() == "Linux" and os.path.exists("/usr/bin/chromium"):
+        chrome_options.binary_location = "/usr/bin/chromium"
 
     driver_instance = webdriver.Chrome(options=chrome_options)
     driver_instance.implicitly_wait(5)
