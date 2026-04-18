@@ -64,29 +64,86 @@ class TaskFormPage(BasePage):
             value,
         )
 
+    @staticmethod
+    def _xpath_literal(value):
+        """Escape a string for use inside XPath single-quoted literals."""
+        if "'" not in value:
+            return f"'{value}'"
+        parts = value.split("'")
+        return "concat(" + ", ".join(
+            f"'{p}', \"'\"" if i < len(parts) - 1 else f"'{p}'"
+            for i, p in enumerate(parts)
+        ) + ")"
+
+    def _option_text(self, element):
+        """Visible text; prefer DOM text when Selenium's .text is empty (MUI listbox)."""
+        raw = element.text.strip()
+        if raw:
+            return raw
+        return (
+            self.driver.execute_script(
+                "return (arguments[0].textContent || '').trim();",
+                element,
+            )
+            or ""
+        )
+
+    def _visible_options(self):
+        """Only options in the open menu; hidden copies often have empty .text in Selenium."""
+        return [
+            el
+            for el in self.driver.find_elements(
+                By.XPATH, "//li[@role='option'] | //*[@role='option' and self::div]"
+            )
+            if el.is_displayed()
+        ]
+
     def _select_option(self, label, option_text, fallback_to_first=False):
         combobox_locator = (
             By.XPATH,
             f"//form//label[contains(normalize-space(), '{label}')]/ancestor::*[contains(@class, 'MuiFormControl-root')][1]//*[@role='combobox']",
         )
-        options_locator = (By.XPATH, "//li[@role='option' and normalize-space()!='']")
 
         for _ in range(3):
             try:
                 combobox = self.wait_until(EC.element_to_be_clickable(combobox_locator))
                 self.driver.execute_script("arguments[0].click();", combobox)
-                self.wait_until(lambda drv: len(drv.find_elements(*options_locator)) > 0)
-                options = self.driver.find_elements(*options_locator)
+                self.wait_until(
+                    lambda drv: any(
+                        el.is_displayed()
+                        for el in drv.find_elements(
+                            By.XPATH, "//li[@role='option'] | //*[@role='option' and self::div]"
+                        )
+                    )
+                )
                 option = None
 
                 if option_text:
                     normalized_target = option_text.strip().lower()
-                    for item in options:
-                        item_text = item.text.strip().lower()
-                        if item_text == normalized_target or normalized_target in item_text:
-                            option = item
+                    lit = self._xpath_literal(option_text.strip())
+                    # Prefer XPath text match (same idea as TasksPage.filter_by); avoids empty .text.
+                    for xpath in (
+                        f"//li[@role='option' and normalize-space()={lit}]",
+                        f"//*[@role='option' and normalize-space()={lit}]",
+                        f"//li[@role='option' and contains(normalize-space(), {lit})]",
+                        f"//*[@role='option' and contains(normalize-space(), {lit})]",
+                    ):
+                        found = self.driver.find_elements(By.XPATH, xpath)
+                        for el in found:
+                            if el.is_displayed():
+                                option = el
+                                break
+                        if option is not None:
                             break
 
+                    if option is None:
+                        for item in self._visible_options():
+                            item_text = self._option_text(item).strip().lower()
+                            if item_text == normalized_target or normalized_target in item_text:
+                                option = item
+                                break
+
+                options = self._visible_options()
                 if option is None and fallback_to_first and options:
                     option = options[0]
 
