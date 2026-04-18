@@ -1,3 +1,4 @@
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -58,9 +59,26 @@ class TasksPage(BasePage):
             By.XPATH,
             f"{container_xpath}//label[contains(normalize-space(), '{label}')]/ancestor::*[contains(@class, 'MuiFormControl-root')][1]//*[@role='combobox']",
         )
-        self.wait_until(EC.element_to_be_clickable(combobox_locator)).click()
-        option_locator = (
-            By.XPATH,
-            f"//li[normalize-space()='{option_text}' and @role='option'] | //*[@role='option' and normalize-space()='{option_text}']",
+        combobox = self.wait_until(EC.element_to_be_clickable(combobox_locator))
+        try:
+            combobox.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", combobox
+            )
+            combobox.click()
+        option_xpath = (
+            f"//li[normalize-space()='{option_text}' and @role='option'] | "
+            f"//*[@role='option' and normalize-space()='{option_text}']"
         )
-        self.wait_until(EC.element_to_be_clickable(option_locator)).click()
+
+        def first_visible_matching_option(driver):
+            for el in driver.find_elements(By.XPATH, option_xpath):
+                if el.is_displayed():
+                    return el
+            return False
+
+        option = self.wait_until(first_visible_matching_option)
+        # Long MUI menus can stack overlapping <li>; native click hits the wrong layer.
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", option)
+        self.driver.execute_script("arguments[0].click();", option)
