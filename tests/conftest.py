@@ -3,6 +3,13 @@ import platform
 
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+from tests.pages.labels_page import LabelsPage
+from tests.pages.statuses_page import StatusesPage
+from tests.pages.tasks_page import TasksPage
+from tests.pages.users_page import UsersPage
+from tests.support.session import open_dashboard
 
 
 def pytest_sessionstart(session):
@@ -17,18 +24,10 @@ def pytest_sessionstart(session):
     impl = os.environ.get("IMPLEMENTATION", "")
     if impl.startswith("wrong") and os.environ.get("RUN_WRONG_IMPLEMENTATION_TESTS") != "1":
         pytest.exit(
-            "Stopping: IMPLEMENTATION=%s (suppressor fail mode expects exit failure; "
-            "set RUN_WRONG_IMPLEMENTATION_TESTS=1 to run tests against this build)."
-            % impl,
+            f"Stopping: IMPLEMENTATION={impl} (suppressor fail mode expects exit failure; "
+            "set RUN_WRONG_IMPLEMENTATION_TESTS=1 to run tests against this build).",
             returncode=1,
         )
-from selenium.webdriver.chrome.options import Options
-
-from tests.pages.labels_page import LabelsPage
-from tests.pages.statuses_page import StatusesPage
-from tests.pages.tasks_page import TasksPage
-from tests.pages.users_page import UsersPage
-from tests.support.session import open_dashboard
 
 
 @pytest.fixture
