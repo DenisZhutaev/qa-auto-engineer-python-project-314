@@ -60,11 +60,12 @@ def test_tasks_filter_by_assignee_updates_visible_cards(tasks_page):
     tasks_page.open()
     tasks_page.filter_by("Assignee", "john@google.com")
     john_cards = tasks_page.task_card_count()
+    assert tasks_page.has_task(payload["title"])
     tasks_page.open()
     tasks_page.filter_by("Assignee", "emily@example.com")
     emily_cards = tasks_page.task_card_count()
-    assert john_cards <= all_cards
-    assert emily_cards <= all_cards
+    assert john_cards != emily_cards
+    assert min(john_cards, emily_cards) < all_cards
 
 
 def test_tasks_filter_by_label_updates_visible_cards(tasks_page):
@@ -78,9 +79,8 @@ def test_tasks_filter_by_label_updates_visible_cards(tasks_page):
     tasks_page.open()
     tasks_page.filter_by("Label", "critical")
     critical_cards = tasks_page.task_card_count()
-    assert bug_cards >= 0
-    assert critical_cards >= 0
-    assert total_cards != bug_cards or bug_cards != critical_cards
+    assert bug_cards != critical_cards
+    assert min(bug_cards, critical_cards) < total_cards
 
 
 def test_tasks_edit_saves_updated_data(tasks_page):

@@ -25,19 +25,24 @@ class TasksPage(BasePage):
         self.wait_until(EC.element_to_be_clickable(self.CREATE_BUTTON)).click()
 
     def has_task(self, title):
-        locator = (By.XPATH, f"//*[@id='main-content']//*[contains(@class, 'MuiTypography-h5') and normalize-space()='{title}']")
-        return bool(self.driver.find_elements(*locator))
+        locator = (
+            By.XPATH,
+            f"//*[@id='main-content']//*[contains(@class, 'MuiTypography-h5') and normalize-space()='{title}']",
+        )
+        return any(el.is_displayed() for el in self.driver.find_elements(*locator))
 
     def task_card_count(self):
-        cards = self.driver.find_elements(By.XPATH, "//*[@id='main-content']//*[contains(@class, 'MuiTypography-h5')]")
-        return len(cards)
+        cards = self.driver.find_elements(
+            By.XPATH, "//*[@id='main-content']//*[contains(@class, 'MuiTypography-h5')]"
+        )
+        return sum(1 for c in cards if c.is_displayed())
 
     def task_in_status_column(self, title, status):
         locator = (
             By.XPATH,
             f"//h6[normalize-space()='{status}']/following-sibling::div[1]//*[contains(@class, 'MuiTypography-h5') and normalize-space()='{title}']",
         )
-        return bool(self.driver.find_elements(*locator))
+        return any(el.is_displayed() for el in self.driver.find_elements(*locator))
 
     def open_task_for_edit(self, title):
         edit_link = (

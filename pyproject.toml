@@ -14,12 +14,10 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# Local: tests live in ./tests. Hexlet Docker mounts the repo under ./code, so tests are ./code/tests.
 [tool.pytest.ini_options]
-pythonpath = ["code"]
-testpaths = ["code/tests"]
-
-[tool.hatch.build]
-sources = ["code"]
+pythonpath = [".", "code"]
+testpaths = ["tests", "code/tests"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["tests"]
