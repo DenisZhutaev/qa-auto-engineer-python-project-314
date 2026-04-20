@@ -32,15 +32,19 @@ def pytest_sessionstart(session):
 
 @pytest.fixture
 def base_url():
-    if os.getenv("APP_BASE_URL"):
-        return os.getenv("APP_BASE_URL")
+    configured_url = os.getenv("APP_BASE_URL")
+    if configured_url:
+        return configured_url
 
+    scheme = os.getenv("APP_BASE_SCHEME", "http")
     if os.path.exists("/.dockerenv"):
         # Internal CI docker network doesn't expose TLS; plain HTTP is expected here.
-        return "http://server"
+        host = "server"
+        return f"{scheme}://{host}"
 
     # Local development server runs without TLS by default.
-    return "http://localhost:5173"
+    host = "localhost:5173"
+    return f"{scheme}://{host}"
 
 
 @pytest.fixture
