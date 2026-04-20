@@ -5,7 +5,11 @@ from tests.support.factories import unique_user
 def _create_user(users_page, user_data):
     users_page.open_create_form()
     form = UserFormPage(users_page.driver).wait_until_loaded()
-    form.fill(user_data["email"], user_data["first_name"], user_data["last_name"])
+    form.fill(
+        user_data["email"],
+        user_data["first_name"],
+        user_data["last_name"],
+    )
     form.save()
     users_page.open()
 
@@ -18,11 +22,19 @@ def test_users_create_form_opens_and_new_user_appears_in_list(users_page):
     user_form = UserFormPage(users_page.driver).wait_until_loaded()
 
     assert user_form.is_create_form_open()
-    user_form.fill("invalid-email", new_user["first_name"], new_user["last_name"])
+    user_form.fill(
+        "invalid-email",
+        new_user["first_name"],
+        new_user["last_name"],
+    )
     user_form.save()
     assert "email format" in user_form.email_error_text().lower()
 
-    user_form.fill(new_user["email"], new_user["first_name"], new_user["last_name"])
+    user_form.fill(
+        new_user["email"],
+        new_user["first_name"],
+        new_user["last_name"],
+    )
     user_form.save()
 
     users_page.open()
@@ -51,7 +63,11 @@ def test_users_edit_prefills_data_and_updates_values(users_page):
     assert values["first_name"] == original_user["first_name"]
     assert values["last_name"] == original_user["last_name"]
 
-    form.fill(updated_user["email"], updated_user["first_name"], updated_user["last_name"])
+    form.fill(
+        updated_user["email"],
+        updated_user["first_name"],
+        updated_user["last_name"],
+    )
     form.save()
     users_page.open()
 

@@ -12,7 +12,10 @@ def unique_user(prefix):
 
 def unique_status(prefix):
     token = uuid4().hex[:8]
-    return {"name": f"{prefix.capitalize()} {token[:4]}", "slug": f"{prefix}-{token}"}
+    return {
+        "name": f"{prefix.capitalize()} {token[:4]}",
+        "slug": f"{prefix}-{token}",
+    }
 
 
 def unique_label(prefix):

@@ -7,7 +7,9 @@ def ensure_login_page(driver, base_url, username="admin", password="admin"):
     dashboard_page = DashboardPage(driver)
     if not login_page.is_displayed(timeout=3):
         dashboard_page.logout()
-        assert login_page.is_displayed(timeout=10), "Expected login form after logout"
+        assert login_page.is_displayed(timeout=10), (
+            "Expected login form after logout"
+        )
     return login_page, dashboard_page, username, password
 
 

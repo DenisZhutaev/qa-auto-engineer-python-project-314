@@ -36,8 +36,12 @@ class LoginPage(BasePage):
         if username_input is None:
             raise AssertionError("Login input was not found on the page")
 
-        password_input = self.wait_until(EC.visibility_of_element_located(self.PASSWORD_LOCATOR))
-        submit_button = self.wait_until(EC.element_to_be_clickable(self.SUBMIT_LOCATOR))
+        password_input = self.wait_until(
+            EC.visibility_of_element_located(self.PASSWORD_LOCATOR)
+        )
+        submit_button = self.wait_until(
+            EC.element_to_be_clickable(self.SUBMIT_LOCATOR)
+        )
 
         username_input.clear()
         username_input.send_keys(username)

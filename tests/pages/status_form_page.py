@@ -19,7 +19,9 @@ class StatusFormPage(BasePage):
 
     def is_create_form_open(self):
         self.wait_until_loaded()
-        return "/create" in self.driver.current_url and not self.driver.find_elements(*self.DELETE_BUTTON)
+        is_create_url = "/create" in self.driver.current_url
+        has_delete = bool(self.driver.find_elements(*self.DELETE_BUTTON))
+        return is_create_url and not has_delete
 
     def get_values(self):
         self.wait_until_loaded()

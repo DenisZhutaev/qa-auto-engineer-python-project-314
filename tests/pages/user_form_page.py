@@ -19,14 +19,22 @@ class UserFormPage(BasePage):
 
     def is_create_form_open(self):
         self.wait_until_loaded()
-        return "/create" in self.driver.current_url and not self.driver.find_elements(*self.DELETE_BUTTON)
+        is_create_url = "/create" in self.driver.current_url
+        has_delete = bool(self.driver.find_elements(*self.DELETE_BUTTON))
+        return is_create_url and not has_delete
 
     def get_values(self):
         self.wait_until_loaded()
         return {
-            "email": self.driver.find_element(*self.EMAIL).get_attribute("value"),
-            "first_name": self.driver.find_element(*self.FIRST_NAME).get_attribute("value"),
-            "last_name": self.driver.find_element(*self.LAST_NAME).get_attribute("value"),
+            "email": self.driver.find_element(*self.EMAIL).get_attribute(
+                "value"
+            ),
+            "first_name": self.driver.find_element(
+                *self.FIRST_NAME
+            ).get_attribute("value"),
+            "last_name": self.driver.find_element(
+                *self.LAST_NAME
+            ).get_attribute("value"),
         }
 
     def fill(self, email, first_name, last_name):
@@ -39,13 +47,21 @@ class UserFormPage(BasePage):
 
     def email_is_valid(self):
         email_input = self.driver.find_element(*self.EMAIL)
-        return self.driver.execute_script("return arguments[0].checkValidity();", email_input)
+        return self.driver.execute_script(
+            "return arguments[0].checkValidity();",
+            email_input,
+        )
 
     def email_validation_message(self):
-        return self.driver.find_element(*self.EMAIL).get_attribute("validationMessage")
+        return self.driver.find_element(*self.EMAIL).get_attribute(
+            "validationMessage"
+        )
 
     def email_error_text(self):
-        helpers = self.driver.find_elements(By.CSS_SELECTOR, "p.MuiFormHelperText-root")
+        helpers = self.driver.find_elements(
+            By.CSS_SELECTOR,
+            "p.MuiFormHelperText-root",
+        )
         for helper in helpers:
             text = helper.text.strip()
             if text:

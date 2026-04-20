@@ -10,7 +10,9 @@ def _create_status(statuses_page, status_data):
     statuses_page.open()
 
 
-def test_statuses_create_form_opens_and_new_status_appears_in_list(statuses_page):
+def test_statuses_create_form_opens_and_new_status_appears_in_list(
+    statuses_page,
+):
     statuses_page.clear_all_statuses()
 
     new_status = unique_status("created")

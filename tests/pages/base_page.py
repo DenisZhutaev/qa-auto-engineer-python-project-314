@@ -15,7 +15,10 @@ class BasePage:
         from selenium.webdriver.support import expected_conditions as EC
 
         try:
-            self.wait_until(EC.visibility_of_element_located(locator), timeout=timeout)
+            self.wait_until(
+                EC.visibility_of_element_located(locator),
+                timeout=timeout,
+            )
             return True
         except TimeoutException:
             return False
