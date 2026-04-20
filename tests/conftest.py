@@ -13,19 +13,26 @@ from tests.support.session import open_dashboard
 
 
 def pytest_sessionstart(session):
-    """Hexlet CI runs ``suppressor fail`` against ``wrong*`` UI builds and expects pytest
-    to exit with failure. Some ``wrongN`` bundles are indistinguishable from the correct
-    app in Selenium (same DOM for the scenarios we assert on), so no test can fail.
+    """Hexlet CI runs ``suppressor fail`` against ``wrong*`` UI builds.
 
-    In that case the harness still requires a non-zero exit code; we stop before running
-    tests. Set ``RUN_WRONG_IMPLEMENTATION_TESTS=1`` to execute the suite against a wrong
-    build locally.
+    It expects pytest to exit with failure. Some ``wrongN`` bundles are
+    indistinguishable from the correct app in Selenium (same DOM for our
+    scenarios), so no test can fail.
+
+    In that case the harness still requires a non-zero exit code, so we stop
+    before running tests. Set ``RUN_WRONG_IMPLEMENTATION_TESTS=1`` to execute
+    the suite against a wrong build locally.
     """
     impl = os.environ.get("IMPLEMENTATION", "")
-    if impl.startswith("wrong") and os.environ.get("RUN_WRONG_IMPLEMENTATION_TESTS") != "1":
+    run_wrong_tests = os.environ.get("RUN_WRONG_IMPLEMENTATION_TESTS") == "1"
+    if impl.startswith("wrong") and not run_wrong_tests:
         pytest.exit(
-            f"Stopping: IMPLEMENTATION={impl} (suppressor fail mode expects exit failure; "
-            "set RUN_WRONG_IMPLEMENTATION_TESTS=1 to run tests against this build).",
+            (
+                f"Stopping: IMPLEMENTATION={impl} "
+                "(suppressor fail mode expects exit failure; set "
+                "RUN_WRONG_IMPLEMENTATION_TESTS=1 to run tests against this "
+                "build)."
+            ),
             returncode=1,
         )
 
@@ -38,7 +45,7 @@ def base_url():
 
     scheme = os.getenv("APP_BASE_SCHEME", "http")
     if os.path.exists("/.dockerenv"):
-        # Internal CI docker network doesn't expose TLS; plain HTTP is expected here.
+        # Internal CI docker network doesn't expose TLS.
         host = "server"
         return f"{scheme}://{host}"
 

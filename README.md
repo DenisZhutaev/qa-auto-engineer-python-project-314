@@ -1,6 +1,7 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/DenisZhutaev/qa-auto-engineer-python-project-314/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/DenisZhutaev/qa-auto-engineer-python-project-314/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DenisZhutaev_qa-auto-engineer-python-project-314&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DenisZhutaev_qa-auto-engineer-python-project-314)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DenisZhutaev_qa-auto-engineer-python-project-314&metric=coverage)](https://sonarcloud.io/summary/new_code?id=DenisZhutaev_qa-auto-engineer-python-project-314)
 
 ## Описание проекта
 
