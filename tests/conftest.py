@@ -36,8 +36,10 @@ def base_url():
         return os.getenv("APP_BASE_URL")
 
     if os.path.exists("/.dockerenv"):
+        # Internal CI docker network doesn't expose TLS; plain HTTP is expected here.
         return "http://server"
 
+    # Local development server runs without TLS by default.
     return "http://localhost:5173"
 
 
