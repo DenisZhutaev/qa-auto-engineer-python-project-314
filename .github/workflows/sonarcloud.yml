@@ -40,13 +40,8 @@ jobs:
         env:
           APP_BASE_URL: http://localhost:5173
         run: |
-          # Do not fail the workflow here: even partial/failed test runs can
-          # still produce coverage.xml that SonarCloud can import.
-          make coverage-xml || true
-          if [ ! -f coverage.xml ]; then
-            echo "coverage.xml not found; generating fallback report"
-            uv run python -m coverage xml -i
-          fi
+          make coverage-xml
+          test -f coverage.xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
