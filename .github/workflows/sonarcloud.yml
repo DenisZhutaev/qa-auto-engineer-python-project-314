@@ -27,20 +27,20 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: make install
 
       - name: Start application
-        run: |
-          # Best-effort startup for projects that expose `make start`.
-          # E2E Selenium tests require a running app.
-          make start > app.log 2>&1 &
-          sleep 25
+        run: make start &
+
+      - name: Wait for application
+        run: sleep 30
 
       - name: Generate coverage.xml
         env:
           APP_BASE_URL: http://localhost:5173
         run: |
-          make coverage-xml
+          make check
+          make test-coverage
           test -f coverage.xml
 
       - name: SonarCloud Scan
@@ -49,8 +49,7 @@ jobs:
           args: >
             -Dsonar.projectKey=DenisZhutaev_qa-auto-engineer-python-project-314
             -Dsonar.organization=deniszhutaev
-            -Dsonar.sources=tests/support
-            -Dsonar.tests=tests
+            -Dsonar.sources=tests
             -Dsonar.python.version=3.12
             -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
