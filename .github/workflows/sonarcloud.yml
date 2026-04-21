@@ -18,12 +18,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Generate coverage.xml
+        env:
+          APP_BASE_URL: http://localhost:5173
+        run: make coverage-xml
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
         with:
           args: >
             -Dsonar.projectKey=DenisZhutaev_qa-auto-engineer-python-project-314
             -Dsonar.organization=deniszhutaev
+            -Dsonar.sources=tests
+            -Dsonar.python.version=3.12
+            -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
