@@ -39,7 +39,9 @@ def test_base_url_prefers_app_base_url(monkeypatch):
 def test_base_url_uses_docker_host_when_in_container(monkeypatch):
     monkeypatch.delenv("APP_BASE_URL", raising=False)
     monkeypatch.setenv("APP_BASE_SCHEME", "http")
-    monkeypatch.setattr(conftest.os.path, "exists", lambda p: p == "/.dockerenv")
+    monkeypatch.setattr(
+        conftest.os.path, "exists", lambda p: p == "/.dockerenv"
+    )
     base_url_func = conftest.base_url.__wrapped__
 
     assert base_url_func() == "http://server"
