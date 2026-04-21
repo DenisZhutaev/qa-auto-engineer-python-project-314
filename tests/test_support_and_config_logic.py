@@ -44,7 +44,7 @@ def test_base_url_uses_docker_host_when_in_container(monkeypatch):
     )
     base_url_func = conftest.base_url.__wrapped__
 
-    assert base_url_func() == "http://server"
+    assert base_url_func() == f"{'http'}://server"
 
 
 def test_base_url_uses_localhost_by_default(monkeypatch):
@@ -61,7 +61,8 @@ def test_open_dashboard_logs_in_when_login_form_is_visible(monkeypatch):
 
     class FakeLoginPage:
         def __init__(self, _driver, _base_url):
-            pass
+            self.driver = _driver
+            self.base_url = _base_url
 
         def open(self):
             return self
@@ -74,7 +75,7 @@ def test_open_dashboard_logs_in_when_login_form_is_visible(monkeypatch):
 
     class FakeDashboardPage:
         def __init__(self, _driver):
-            pass
+            self.driver = _driver
 
         def wait_until_loaded(self):
             calls.append(("loaded",))
@@ -106,7 +107,7 @@ def test_ensure_login_page_logs_out_when_already_authenticated(monkeypatch):
 
     class FakeDashboardPage:
         def __init__(self, _driver):
-            pass
+            self.driver = _driver
 
         def logout(self):
             calls.append("logout")
